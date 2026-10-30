@@ -200,7 +200,7 @@ function validateManifest(manifest, { publishing = false } = {}) {
   for (const pkg of manifest.packages) {
     const parsed = version(pkg.version);
     check(
-      pkg.filename === `${pkg.name}-${pkg.version}.tgz`,
+      pkg.filename === `${pkg.name.replace('@', '').replace('/', '-')}-${pkg.version}.tgz`,
       'Unexpected package artifact filename'
     );
     check(/^sha512-[A-Za-z0-9+/]{86}==$/.test(pkg.integrity), 'Invalid package integrity');
