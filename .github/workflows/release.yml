@@ -1,3 +1,4 @@
+# Sandbox copy of the wix/react-native-ui-lib release workflow.
 name: Release
 run-name: ${{ inputs.operation }} RNUILib sandbox ${{ inputs.version || inputs.kind }} by @${{ github.actor }}
 
