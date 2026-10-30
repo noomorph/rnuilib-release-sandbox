@@ -29,7 +29,7 @@ const inputs = { operation: 'publish', kind: 'release', version: '9.1.4', npmTag
 const current = { '@noomorph/react-native-ui-lib': '9.0.0', '@noomorph/uilib-native': '5.1.2' };
 const latest = { '@noomorph/react-native-ui-lib': '9.1.3', '@noomorph/uilib-native': '5.1.2' };
 const integrity = `sha512-${Buffer.alloc(64).toString('base64')}`;
-const packed = (pkg) => ({ ...pkg, filename: `${pkg.name}-${pkg.version}.tgz`, integrity });
+const packed = (pkg) => ({ ...pkg, filename: `${pkg.name.replace('@', '').replace('/', '-')}-${pkg.version}.tgz`, integrity });
 
 test('versions are strict semver, including prerelease ordering', () => {
   for (const invalid of ['v9.1.4', '09.1.4', '9.1', '9.1.4;echo x', '9.1.4-01', '9.1.4+build']) {
