@@ -1,0 +1,276 @@
+import React, {useCallback, useMemo} from 'react';
+import {LayoutChangeEvent, StyleSheet, ViewStyle} from 'react-native';
+import Animated from 'react-native-reanimated';
+import {Keyboard} from '@noomorph/uilib-native';
+import {SafeAreaContextPackage} from '../../optionalDependencies';
+import View from '../view';
+import Image from '../image';
+import Assets from '../../assets';
+import {Colors, Shadows, Spacings} from '../../style';
+import {asBaseComponent, Constants} from '../../commons/new';
+import {useKeyboardHeight} from '../../hooks';
+import useAnimatedFooterStyle from './useAnimatedFooterStyle';
+import {
+  ScreenFooterProps,
+  ScreenFooterLayouts,
+  ScreenFooterBackgrounds,
+  FooterAlignment,
+  HorizontalItemsDistribution,
+  ItemsFit,
+  KeyboardBehavior,
+  ScreenFooterAnimationTypeProp,
+  ScreenFooterShadow
+} from './types';
+
+export {
+  ScreenFooterProps,
+  ScreenFooterLayouts,
+  ScreenFooterBackgrounds,
+  FooterAlignment,
+  HorizontalItemsDistribution,
+  ItemsFit,
+  KeyboardBehavior,
+  ScreenFooterAnimationTypeProp,
+  ScreenFooterShadow
+};
+const ScreenFooter = (props: ScreenFooterProps) => {
+  const {
+    testID,
+    layout,
+    alignment,
+    horizontalAlignment,
+    backgroundType,
+    children,
+    keyboardBehavior = KeyboardBehavior.STICKY,
+    itemsFit,
+    itemWidth,
+    horizontalItemsDistribution: distribution,
+    visible = true,
+    animationDuration,
+    animationType,
+    shadow = ScreenFooterShadow.SH20,
+    hideDivider = false,
+    isAndroidEdgeToEdge,
+    containerStyle: containerStyleOverride,
+    contentContainerStyle: contentContainerStyleOverride
+  } = props;
+
+  const {containerStyle, setHeight} = useAnimatedFooterStyle({
+    animationDuration,
+    animationType,
+    keyboardBehavior,
+    visible,
+    isAndroidEdgeToEdge,
+    containerStyle: containerStyleOverride
+  });
+
+  const onLayout = useCallback((event: LayoutChangeEvent) => {
+    setHeight(event.nativeEvent.layout.height);
+  }, []);
+
+  const isSolid = backgroundType === ScreenFooterBackgrounds.SOLID;
+  const isFading = backgroundType === ScreenFooterBackgrounds.FADING;
+  const isHorizontal = layout === ScreenFooterLayouts.HORIZONTAL;
+
+  const childrenCount = React.Children.count(children);
+
+  const justifyContent: ViewStyle['justifyContent'] = useMemo(() => {
+    if (isHorizontal) {
+      if (distribution === HorizontalItemsDistribution.SPREAD) {
+        return childrenCount === 1 ? 'center' : 'space-between';
+      }
+      switch (horizontalAlignment) {
+        case FooterAlignment.START:
+          return 'flex-start';
+        case FooterAlignment.END:
+          return 'flex-end';
+        default:
+          return 'center';
+      }
+    }
+    return 'flex-start';
+  }, [isHorizontal, distribution, horizontalAlignment, childrenCount]);
+
+  const alignItems = useMemo(() => {
+    if (layout === ScreenFooterLayouts.VERTICAL) {
+      if (itemsFit === ItemsFit.STRETCH) {
+        return 'stretch';
+      }
+    }
+
+    switch (alignment) {
+      case FooterAlignment.START:
+        return 'flex-start';
+      case FooterAlignment.END:
+        return 'flex-end';
+      default:
+        return 'center';
+    }
+  }, [layout, itemsFit, alignment]);
+
+  const useSafeAreaInsets = SafeAreaContextPackage?.useSafeAreaInsets ?? (() => Constants.getSafeAreaInsets());
+  const insets = useSafeAreaInsets();
+
+  const keyboardHeight = useKeyboardHeight();
+  const isKeyboardVisible = keyboardHeight > 0;
+
+  const contentContainerStyle = useMemo(() => {
+    const style: any[] = [
+      styles.contentContainer,
+      layout === ScreenFooterLayouts.HORIZONTAL ? styles.horizontalContainer : styles.verticalContainer,
+      {alignItems, justifyContent}
+    ];
+
+    if (!isKeyboardVisible) {
+      style.push({paddingBottom: insets.bottom});
+    }
+
+    if (isSolid) {
+      const shadowStyle = Shadows[shadow]?.top;
+      const backgroundElevation = shadowStyle?.elevation || 0;
+      style.push({elevation: backgroundElevation + 1});
+    }
+
+    if (contentContainerStyleOverride) {
+      style.push(contentContainerStyleOverride);
+    }
+
+    return style;
+  }, [
+    layout,
+    alignItems,
+    justifyContent,
+    insets.bottom,
+    isSolid,
+    shadow,
+    isKeyboardVisible,
+    contentContainerStyleOverride
+  ]);
+
+  const solidBackgroundStyle = useMemo(() => {
+    if (!isSolid) {
+      return undefined;
+    }
+    const shadowStyle = Shadows[shadow]?.top;
+    const dividerStyle = hideDivider ? undefined : {borderTopWidth: 1, borderColor: Colors.$outlineDefault};
+    return [shadowStyle, dividerStyle];
+  }, [isSolid, shadow, hideDivider]);
+
+  const renderBackground = useCallback(() => {
+    if (isSolid) {
+      return (
+        <View
+          testID={testID ? `${testID}.solidBackground` : undefined}
+          absF
+          bg-$backgroundElevated
+          style={solidBackgroundStyle}
+          pointerEvents="none"
+        />
+      );
+    }
+
+    if (isFading) {
+      return (
+        <View testID={testID ? `${testID}.fadingBackground` : undefined} absF pointerEvents="none">
+          <Image
+            source={Assets.internal.images.bottomGradient}
+            style={styles.background}
+            resizeMode="stretch"
+            tintColor={Colors.$backgroundDefault}
+          />
+        </View>
+      );
+    }
+
+    return null;
+  }, [testID, isSolid, isFading, solidBackgroundStyle]);
+
+  const renderChild = useCallback((child: React.ReactNode, index: number) => {
+    if (itemsFit === ItemsFit.FIXED && itemWidth) {
+      const fixedStyle: ViewStyle = isHorizontal
+        ? {width: itemWidth, flexShrink: 1, overflow: 'hidden', flexDirection: 'row', justifyContent: 'center'}
+        : {width: itemWidth, maxWidth: '100%'};
+      return (
+        <View key={index} style={fixedStyle}>
+          {child}
+        </View>
+      );
+    }
+
+    if (isHorizontal && React.isValidElement(child) && itemsFit === ItemsFit.STRETCH) {
+      return (
+        <View flex row centerH key={index}>
+          {child}
+        </View>
+      );
+    }
+    return child;
+  },
+  [itemsFit, itemWidth, isHorizontal]);
+
+  const childrenArray = React.Children.toArray(children).slice(0, 3).map(renderChild);
+
+  const renderFooterContent = useCallback(() => {
+    return (
+      <>
+        {renderBackground()}
+        <View testID={testID ? `${testID}.content` : undefined} style={contentContainerStyle}>
+          {childrenArray}
+        </View>
+      </>
+    );
+  }, [renderBackground, testID, contentContainerStyle, childrenArray]);
+
+  const renderKeyboardAwareFooter = useCallback(() => {
+    if (keyboardBehavior === 'hoisted') {
+      return (
+        <Keyboard.KeyboardAccessoryView
+          renderContent={renderFooterContent}
+          kbInputRef={undefined}
+          scrollBehavior={Keyboard.KeyboardAccessoryView.scrollBehaviors.FIXED_OFFSET}
+          useSafeArea={false}
+          manageScrollView={false}
+          revealKeyboardInteractive
+          onHeightChanged={setHeight}
+        />
+      );
+    } else {
+      return renderFooterContent();
+    }
+  }, [keyboardBehavior, renderFooterContent]);
+
+  return (
+    <Animated.View
+      testID={testID}
+      style={containerStyle}
+      onLayout={keyboardBehavior === 'hoisted' ? undefined : onLayout}
+      pointerEvents={!visible ? 'none' : keyboardBehavior === 'hoisted' ? 'box-none' : 'auto'}
+    >
+      {renderKeyboardAwareFooter()}
+    </Animated.View>
+  );
+};
+
+ScreenFooter.displayName = 'ScreenFooter';
+
+const styles = StyleSheet.create({
+  contentContainer: {
+    paddingTop: Spacings.s4,
+    paddingHorizontal: Spacings.s5,
+    paddingBottom: Spacings.s5
+  },
+  horizontalContainer: {
+    flexDirection: 'row',
+    gap: Spacings.s5
+  },
+  verticalContainer: {
+    flexDirection: 'column',
+    gap: Spacings.s3
+  },
+  background: {
+    width: '100%',
+    height: '100%'
+  }
+});
+
+export default asBaseComponent<ScreenFooterProps, typeof ScreenFooter>(ScreenFooter);

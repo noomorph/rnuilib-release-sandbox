@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    // "outDir": "dist",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "jsx": "react-native",
+    "skipLibCheck": true,
+    // "resolveJsonModule": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    // "noEmit": true,
+    // "checkJs": true,
+    "allowJs": false,
+    "emitDeclarationOnly": true,
+    // "noImplicitAny": false
+    "declaration": true,
+    // "declarationDir": "./generatedTypes",
+    "baseUrl": ".",
+    "paths": {
+      "commons": ["packages/react-native-ui-lib/src/commons"],
+      "helpers": ["packages/react-native-ui-lib/src/helpers"],
+      "utils": ["packages/react-native-ui-lib/src/utils"],
+      "hooks": ["packages/react-native-ui-lib/src/hooks"],
+      "optionalDeps": ["packages/react-native-ui-lib/src/optionalDependencies"],
+      "services": ["packages/react-native-ui-lib/src/services"],
+      "style": ["packages/react-native-ui-lib/src/style"]
+    }
+  },
+  "include": [
+    "packages/react-native-ui-lib/src/**/*",
+    "packages/react-native-ui-lib/lib/**/*",
+    "lib/**/*",
+    "typings/**/*",
+    "packages/unicorn-demo-app/**/*",
+    "packages/uilib-native/components/**/*"
+  ],
+  "exclude": ["node_modules", "packages/react-native-ui-lib/src/**/__tests__"]
+}

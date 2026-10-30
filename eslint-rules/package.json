@@ -1,0 +1,42 @@
+{
+  "name": "eslint-plugin-uilib",
+  "version": "3.0.0",
+  "description": "uilib set of eslint rules",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin"
+  ],
+  "author": "Inbal Tish <inbalti@wix.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wix/react-native-ui-lib/blob/master/eslint-rules/README.md"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests --recursive",
+    "test:watch": "mocha tests --recursive --watch",
+    "releaseEslint": "node ./scripts/releaseEslint.js"
+  },
+  "dependencies": {
+    "lodash": "4.18.1",
+    "requireindex": "~1.1.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.0.0",
+    "eslint-config-standard": "^16.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.0.0",
+    "mocha": "^10.8.2",
+    "shell-utils": "^1.0.10"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  }
+}
